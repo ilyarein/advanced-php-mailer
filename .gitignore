@@ -1,0 +1,15 @@
+vendor/
+composer.lock
+.env
+.env.local
+*.log
+.cache/
+temp/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.history/
+TODO_IMPROVEMENTS.md
+*.swp
+*.swo
