@@ -6,5 +6,9 @@
     </testsuite>
   </testsuites>
 
-  <!-- Coverage and logging are generated via CLI flags in CI to keep this config minimal -->
+  <coverage processUncoveredFiles="false">
+    <include>
+      <directory suffix=".php">src</directory>
+    </include>
+  </coverage>
 </phpunit>
