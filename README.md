@@ -1,5 +1,7 @@
 # Advanced Mailer
 
+![CI](https://github.com/ilyarein/advanced-php-mailer/actions/workflows/ci.yml/badge.svg)
+
 Advanced Mailer is a modular PHP mailer library designed for flexibility and production usage. It provides multiple transports, a queueing system, a simple templating engine, email validation, and PSR-3 compatible logging.
 
 Purpose
