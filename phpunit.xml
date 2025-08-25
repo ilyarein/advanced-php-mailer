@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php" colors="true" verbose="true">
+<phpunit bootstrap="vendor/autoload.php" colors="true">
   <testsuites>
     <testsuite name="AdvancedMailer Test Suite">
       <directory>tests</directory>
     </testsuite>
   </testsuites>
 
-  <logging>
-    <log type="junit" target="build/logs/junit.xml"/>
-    <coverage-clover output="coverage.xml"/>
-  </logging>
+  <!-- Coverage and logging are generated via CLI flags in CI to keep this config minimal -->
 </phpunit>
-
-

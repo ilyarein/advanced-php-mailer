@@ -44,9 +44,16 @@ jobs:
             echo "phpunit config not found, skipping"
           fi
 
+      - name: Show workspace files (debug)
+        run: |
+          echo "CWD: $(pwd)"
+          ls -la
+          if [ -f coverage.xml ]; then echo "coverage.xml found"; else echo "coverage.xml NOT found"; fi
+ 
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: coverage.xml
-
-
+          verbose: true
+          fail_ci_if_error: false
