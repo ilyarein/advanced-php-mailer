@@ -19,7 +19,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, openssl, curl
+          extensions: mbstring, openssl, curl, xdebug
 
       - name: Validate composer.json
         run: composer validate --no-check-publish
@@ -35,12 +35,18 @@ jobs:
             echo "phpstan config not found, skipping"
           fi
 
-      - name: Run tests (phpunit)
+      - name: Run tests (phpunit + coverage)
         run: |
           if [ -f phpunit.xml ] || [ -f phpunit.xml.dist ]; then
-            vendor/bin/phpunit --colors=always || true
+            echo "Running phpunit and generating coverage.xml"
+            vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml || true
           else
             echo "phpunit config not found, skipping"
           fi
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
 
 

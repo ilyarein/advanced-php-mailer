@@ -2,7 +2,9 @@
 
 ![CI](https://github.com/ilyarein/advanced-php-mailer/actions/workflows/ci.yml/badge.svg)
 
-Advanced Mailer is a modular PHP mailer library designed for flexibility and production usage. It provides multiple transports, a queueing system, a simple templating engine, email validation, and PSR-3 compatible logging.
+[![Codecov](https://codecov.io/gh/ilyarein/advanced-php-mailer/branch/main/graph/badge.svg?token=)](https://codecov.io/gh/ilyarein/advanced-php-mailer)
+
+Advanced Mailer is a modular PHP mailer library designed for flexibility and production usage. It provides multiple transports, a queueing system, a simple templating engine, email validation, PSR-3 compatible logging, DKIM and S/MIME signing helpers, and practical asynchronous sending.
 
 Purpose
 - Unified sending API across different transports (SMTP, SendGrid, etc.).
@@ -14,6 +16,7 @@ Key features
 - Queueing system with priorities and retry logic (`Queue/MailQueue.php`).
 - Simple template engine for generating HTML emails (`Template/TemplateEngine.php`).
 - Promise-like API and a helper for background sending (`Promise`, `Mail::sendAsync()`).
+- DKIM signing and S/MIME signing support (optional; requires configuration of keys/certificates).
 - Email validation (format + optional DNS checks) (`Validation/EmailValidator.php`).
 - Attachments and embedded images handling with type/size checks.
 - PSR-3 compatible logging interface with a `NullLogger` provided.
@@ -45,10 +48,14 @@ $mail->setFrom('from@example.com', 'Sender')
      ->send();
 ```
 
-With Composer (optional):
+With Composer (recommended for development and tests):
 ```bash
 composer install
-require 'vendor/autoload.php'
+```
+
+When running tests or using the library via Composer, require the autoloader:
+```php
+require 'vendor/autoload.php';
 ```
 
 Logging

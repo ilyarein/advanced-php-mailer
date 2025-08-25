@@ -5,59 +5,9 @@ namespace AdvancedMailer\Tests;
 use AdvancedMailer\Mail;
 use AdvancedMailer\Validation\EmailValidator;
 use AdvancedMailer\Exception\MailException;
+use PHPUnit\Framework\TestCase;
 
-// Простая тестовая заглушка без PHPUnit зависимостей
-class SimpleTestCase {
-    protected function assertInstanceOf(string $class, $object): void {
-        if (!$object instanceof $class) {
-            throw new \Exception("Object is not instance of $class");
-        }
-        echo "✓ assertInstanceOf passed\n";
-    }
-
-    protected function assertEquals($expected, $actual): void {
-        if ($expected !== $actual) {
-            throw new \Exception("Expected $expected, got $actual");
-        }
-        echo "✓ assertEquals passed\n";
-    }
-
-    protected function assertCount(int $expected, array $array): void {
-        if (count($array) !== $expected) {
-            throw new \Exception("Expected count $expected, got " . count($array));
-        }
-        echo "✓ assertCount passed\n";
-    }
-
-    protected function assertTrue($value): void {
-        if (!$value) {
-            throw new \Exception("Expected true, got false");
-        }
-        echo "✓ assertTrue passed\n";
-    }
-
-    protected function assertFalse($value): void {
-        if ($value) {
-            throw new \Exception("Expected false, got true");
-        }
-        echo "✓ assertFalse passed\n";
-    }
-
-    protected function expectException(string $exceptionClass): void {
-        $this->expectedException = $exceptionClass;
-        echo "✓ Exception expected: $exceptionClass\n";
-    }
-
-    protected function expectExceptionMessage(string $message): void {
-        $this->expectedMessage = $message;
-        echo "✓ Exception message expected: $message\n";
-    }
-
-    private $expectedException = null;
-    private $expectedMessage = null;
-}
-
-class MailTest extends SimpleTestCase
+class MailTest extends TestCase
 {
     private array $testConfig;
 
@@ -218,30 +168,4 @@ class MailTest extends SimpleTestCase
         $this->expectException(MailException::class);
         $mail->setPriority(10);
     }
-
-    // Простой способ запуска тестов без PHPUnit
-    public function runTests(): void {
-        echo "=== Запуск тестов Advanced Mailer ===\n\n";
-
-        $testMethods = array_filter(get_class_methods($this), function($method) {
-            return str_starts_with($method, 'test');
-        });
-
-        foreach ($testMethods as $method) {
-            echo "Тест: $method\n";
-            try {
-                $this->setUp();
-                $this->$method();
-                echo "✅ Пройден\n\n";
-            } catch (\Exception $e) {
-                echo "❌ Ошибка: " . $e->getMessage() . "\n\n";
-            }
-        }
-    }
-}
-
-// Запуск тестов
-if (basename(__FILE__) === basename($_SERVER['PHP_SELF'] ?? __FILE__)) {
-    $test = new MailTest();
-    $test->runTests();
 }

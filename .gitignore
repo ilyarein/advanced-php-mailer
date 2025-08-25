@@ -11,5 +11,7 @@ Thumbs.db
 .vscode/
 .history/
 TODO_IMPROVEMENTS.md
+GIT_COMMANDS.md
+SHARED_HOSTING_SETUP.md
 *.swp
 *.swo

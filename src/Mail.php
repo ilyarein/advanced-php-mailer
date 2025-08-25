@@ -498,8 +498,10 @@ class Mail
      */
     private function sanitizeName(string $name): string
     {
-        // Remove control characters and limit length
-        $clean = preg_replace('/[\x00-\x1F\x7F]+/u', '', $name);
+        // Replace control characters with a single space, collapse whitespace and limit length
+        $clean = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $name);
+        // Normalize all whitespace (tabs, newlines, multiple spaces) to a single space
+        $clean = preg_replace('/\s+/u', ' ', $clean);
         $clean = trim($clean);
         if (mb_strlen($clean) > 255) {
             $clean = mb_substr($clean, 0, 255);

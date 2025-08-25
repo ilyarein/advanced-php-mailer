@@ -1,12 +1,12 @@
 {
-    "name": "advanced-mailer/mailer",
+    "name": "ilyarein/advanced-php-mailer",
     "description": "Advanced PHP Mail Library - Improved alternative to PHPMailer",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Your Name",
-            "email": "your.email@example.com"
+            "name": "Ilya Rein",
+            "email": "ilyarein@gmail.com"
         }
     ],
     "require": {
