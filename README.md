@@ -8,12 +8,12 @@
 
 Advanced Mailer is a modular PHP mailer library designed for flexibility and production usage. It provides multiple transports, a queueing system, a simple templating engine, email validation, PSR-3 compatible logging, DKIM and S/MIME signing helpers, and practical asynchronous sending.
 
----
+
 ## Purpose
 - Unified sending API across different transports (SMTP, SendGrid, etc.).
 - Usable in standalone projects without Composer, but also Composer-friendly.
 
----
+
 ## Key features
 - Modular architecture with `TransportInterface` for easy extension.
 - Built-in transports: SMTP and SendGrid.
@@ -26,12 +26,12 @@ Advanced Mailer is a modular PHP mailer library designed for flexibility and pro
 - PSR-3 compatible logging interface with a `NullLogger` provided.
 - Basic DKIM and S/MIME signing helpers (configure keys/certificates in transport config).
 
----
+
 ## Requirements
 - PHP >= 8.1
 - Recommended extensions: `mbstring`, `openssl`, `fileinfo` (finfo). For `SendGridTransport` the `curl` extension is required.
 
----
+
 ## Installation and usage
 
 ### Standalone (no Composer)
@@ -283,22 +283,22 @@ When running tests or using the library via Composer, require the autoloader:
 require 'vendor/autoload.php';
 ```
 
----
+
 ## Logging
 
 Advanced Mailer provides a PSR-3 compatible interface. You can pass any PSR-3 logger (e.g., Monolog) or use the included `NullLogger` for no-op logging.
 
----
+
 ## License
 
 This project is distributed under the MIT License — see the `LICENSE` file.
 
----
+
 ## Support and contribution
 
 Issues and pull requests are welcome on GitHub. Please open an issue before submitting large or breaking changes.
 
----
+
 ## Sponsorship
 
 Development of Advanced Mailer is supported by the author and community contributions. If you find this library useful, you can support development in several ways:
@@ -316,7 +316,7 @@ Supported crypto wallets (one-time donations accepted):
 
 Thank you for considering support — every contribution helps maintain and improve the project.
 
----
+
 ## Asynchronous sending
 
 Advanced Mailer provides a practical asynchronous sending helper via `Mail::sendAsync()`.
@@ -333,7 +333,7 @@ Security and reliability notes:
 - Ensure temporary files directory is secure and writable by the PHP process.
 - For robust background processing consider using a real queue/worker system (e.g., Supervisor + CLI worker, system queue) for high throughput.
 
----
+
 ## Logging and troubleshooting
 
 - Place logs in `var/log/` (example `var/log/contact.log` and `var/log/mail.log`). Ensure the web user can write there (permissions 0755 for dirs, 0644 for files typically).
