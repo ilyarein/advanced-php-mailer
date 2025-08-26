@@ -5,7 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use AdvancedMailer\Mail;
 use AdvancedMailer\Template\TemplateEngine;
 
-// Конфигурация SMTP
+// SMTP configuration
 $config = [
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
@@ -14,82 +14,82 @@ $config = [
     'smtp_encryption' => 'tls'
 ];
 
-// Создание экземпляра Mail
+// Create Mail instance
 $mail = new Mail($config);
 
-// Создание шаблонного движка
+// Create template engine
 $templateEngine = new TemplateEngine(__DIR__ . '/templates');
 
-// Создание шаблона приветствия
+// Create welcome template
 $welcomeTemplate = '
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Добро пожаловать</title>
+    <title>Welcome</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #2c3e50;">Добро пожаловать, {{name}}!</h1>
+        <h1 style="color: #2c3e50;">Welcome, {{name}}!</h1>
 
-        <p>Спасибо за регистрацию на нашем сайте.</p>
+        <p>Thank you for registering on our site.</p>
 
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Ваш логин:</strong> {{username}}</p>
+            <p><strong>Your login:</strong> {{username}}</p>
             <p><strong>Email:</strong> {{email}}</p>
         </div>
 
-        <p>Для активации аккаунта перейдите по ссылке:</p>
+        <p>To activate your account, please click the link:</p>
         <p style="text-align: center; margin: 30px 0;">
-            <a href="{{activation_link}}" style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Активировать аккаунт</a>
+            <a href="{{activation_link}}" style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Activate account</a>
         </p>
 
         {if company_name}
-        <p><strong>Компания:</strong> {{company_name}}</p>
+        <p><strong>Company:</strong> {{company_name}}</p>
         {/if}
 
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
-        <p>С уважением,<br>
+        <p>Best regards,<br>
         <strong>{{site_name}}</strong></p>
     </div>
 </body>
 </html>
 ';
 
-// Сохранение шаблона
+// Save template
 $templateEngine->saveTemplate('welcome.html', $welcomeTemplate);
 
-// Настройка письма с использованием шаблона
-$mail->setFrom('noreply@example.com', 'Система уведомлений')
-     ->addAddress('newuser@example.com', 'Новый пользователь')
-     ->setSubject('Добро пожаловать!')
+// Configure message using template
+$mail->setFrom('noreply@example.com', 'Notification System')
+     ->addAddress('newuser@example.com', 'New User')
+     ->setSubject('Welcome!')
      ->useTemplate('welcome', [
-         'name' => 'Иван Петров',
-         'username' => 'ivan_petrov',
+         'name' => 'John Doe',
+         'username' => 'john_doe',
          'email' => 'newuser@example.com',
          'activation_link' => 'https://example.com/activate?token=abc123',
-         'company_name' => 'Тестовая компания',
-         'site_name' => 'Мой сайт'
+         'company_name' => 'Test company',
+         'site_name' => 'My site'
      ]);
 
-// Отправка письма
+// Send message
 try {
     if ($mail->send()) {
-        echo "Приветственное письмо отправлено успешно!\n";
+        echo "Welcome message sent successfully!\n";
     } else {
-        echo "Ошибка отправки письма.\n";
+        echo "Error sending message.\n";
     }
 } catch (Exception $e) {
-    echo "Ошибка: " . $e->getMessage() . "\n";
+    echo "Error: " . $e->getMessage() . "\n";
 }
 
-// Демонстрация других возможностей шаблонов
-echo "\n=== Другие примеры шаблонов ===\n";
+// Demonstration of other template features
+echo "\n=== Other template examples ===\n";
 
-// Шаблон с циклом
+// Loop template
 $listTemplate = '
-<h1>Список пользователей</h1>
+<h1>User list</h1>
 <ul>
 {foreach users as user}
     <li>{{user.name}} ({{user.email}})</li>
@@ -98,30 +98,30 @@ $listTemplate = '
 ';
 
 $mail2 = new Mail($config);
-$mail2->setFrom('noreply@example.com', 'Система отчетов')
-      ->addAddress('admin@example.com', 'Администратор')
-      ->setSubject('Еженедельный отчет')
+    $mail2->setFrom('noreply@example.com', 'Report System')
+      ->addAddress('admin@example.com', 'Admin')
+      ->setSubject('Weekly report')
       ->setHtmlBody($templateEngine->renderString($listTemplate, [
           'users' => [
-              ['name' => 'Иван', 'email' => 'ivan@example.com'],
-              ['name' => 'Мария', 'email' => 'maria@example.com'],
-              ['name' => 'Алексей', 'email' => 'alex@example.com']
+              ['name' => 'John', 'email' => 'john@example.com'],
+              ['name' => 'Maria', 'email' => 'maria@example.com'],
+              ['name' => 'Alex', 'email' => 'alex@example.com']
           ]
       ]));
 
-// Отправка второго письма
+// Send second message
 try {
     if ($mail2->send()) {
-        echo "Отчет отправлен успешно!\n";
+        echo "Report sent successfully!\n";
     } else {
-        echo "Ошибка отправки отчета.\n";
+        echo "Error sending report.\n";
     }
 } catch (Exception $e) {
-    echo "Ошибка: " . $e->getMessage() . "\n";
+    echo "Error: " . $e->getMessage() . "\n";
 }
 
-// Показать доступные шаблоны
-echo "\nДоступные шаблоны:\n";
+// Show available templates
+echo "\nAvailable templates:\n";
 $templates = $templateEngine->getAvailableTemplates();
 foreach ($templates as $template) {
     echo "- $template\n";

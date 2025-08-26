@@ -64,14 +64,14 @@ class Mail
     public function setFrom(string $email, string $name = ''): self
     {
         if (!$this->validator->isValid($email)) {
-            $this->logger->error('Некорректный email отправителя', [
+            $this->logger->error('Invalid sender email address', [
                 'email' => $email,
                 'validation_result' => false
             ]);
             throw new MailException("Invalid sender email address: {$email}");
         }
 
-        $this->logger->debug('Отправитель установлен', [
+        $this->logger->debug('Sender set', [
             'email' => $email,
             'name' => $name,
             'validation_passed' => true
@@ -220,7 +220,7 @@ class Mail
     public function addAttachment(string $path, string $name = '', string $mimeType = ''): self
     {
         if (!file_exists($path)) {
-            $this->logger->error('Файл вложения не найден', [
+            $this->logger->error('Attachment file not found', [
                 'path' => $path,
                 'exists' => file_exists($path),
                 'readable' => is_readable($path)
@@ -230,7 +230,7 @@ class Mail
 
         $fileSize = filesize($path);
         if ($fileSize > $this->config['max_attachment_size']) {
-            $this->logger->warning('Размер вложения превышает лимит', [
+            $this->logger->warning('Attachment size exceeds limit', [
                 'path' => $path,
                 'size' => $fileSize,
                 'max_size' => $this->config['max_attachment_size']
@@ -240,7 +240,7 @@ class Mail
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (!in_array($extension, $this->config['allowed_extensions'])) {
-            $this->logger->error('Недопустимый тип файла вложения', [
+            $this->logger->error('Invalid attachment type', [
                 'path' => $path,
                 'extension' => $extension,
                 'allowed' => $this->config['allowed_extensions']
@@ -259,7 +259,7 @@ class Mail
             'size' => $fileSize
         ];
 
-        $this->logger->debug('Вложение добавлено', [
+        $this->logger->debug('Attachment added', [
             'name' => $name,
             'size' => $fileSize,
             'mime_type' => $this->attachments[count($this->attachments)-1]['mime_type']
@@ -341,7 +341,7 @@ class Mail
         $this->validateBeforeSend();
 
         try {
-            $this->logger->info('Отправка письма начата', [
+            $this->logger->info('Sending message started', [
                 'to_count' => count($this->recipients),
                 'cc_count' => count($this->cc),
                 'bcc_count' => count($this->bcc),
@@ -351,7 +351,7 @@ class Mail
 
             $result = $this->transport->send($this->buildMessage());
 
-            $this->logger->info('Письмо успешно отправлено', [
+            $this->logger->info('Message sent successfully', [
                 'message_id' => $this->messageId,
                 'transport' => $this->transport->getName()
             ]);
@@ -359,7 +359,7 @@ class Mail
             return $result;
 
         } catch (\Exception $e) {
-            $this->logger->error('Ошибка отправки письма', [
+            $this->logger->error('Error sending message', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'subject' => $this->subject,

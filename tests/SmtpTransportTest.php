@@ -31,9 +31,9 @@ class SmtpTransportTest extends TestCase
         $method = $ref->getMethod('prepareTextPart');
         $method->setAccessible(true);
 
-        $result = $method->invoke($transport, "Привет");
+        $result = $method->invoke($transport, "Hello");
         $this->assertEquals('8bit', $result['encoding']);
-        $this->assertStringContainsString('Привет', $result['content']);
+        $this->assertStringContainsString('Hello', $result['content']);
     }
 
     public function testPrepareTextPartNonAsciiWithout8bitFallsBack()
@@ -47,7 +47,7 @@ class SmtpTransportTest extends TestCase
         $method = $ref->getMethod('prepareTextPart');
         $method->setAccessible(true);
 
-        $result = $method->invoke($transport, "Привет");
+        $result = $method->invoke($transport, "Hello");
         $this->assertIsArray($result);
         $this->assertContains($result['encoding'], ['quoted-printable', 'base64']);
         $this->assertNotEmpty($result['content']);

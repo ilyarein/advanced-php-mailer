@@ -6,7 +6,7 @@ use AdvancedMailer\Mail;
 use AdvancedMailer\Queue\MailQueue;
 use AdvancedMailer\Transport\SmtpTransport;
 
-// Конфигурация SMTP
+// SMTP configuration
 $config = [
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
@@ -15,72 +15,72 @@ $config = [
     'smtp_encryption' => 'tls'
 ];
 
-// Создание транспорта
+// Create transport
 $transport = new SmtpTransport($config);
 
-// Создание очереди
+// Create queue
 $queue = new MailQueue($transport);
 
-// Создание нескольких писем
+// Create several mails
 $mails = [];
 
-// Письмо 1
+// Mail 1
 $mail1 = new Mail($config);
-$mail1->setFrom('sender@example.com', 'Отправитель')
-      ->addAddress('user1@example.com', 'Пользователь 1')
-      ->setSubject('Приветствие 1')
-      ->setHtmlBody('<h1>Привет, Пользователь 1!</h1>');
+$mail1->setFrom('sender@example.com', 'Sender')
+      ->addAddress('user1@example.com', 'User 1')
+      ->setSubject('Greeting 1')
+      ->setHtmlBody('<h1>Hello, User 1!</h1>');
 
 $mails[] = $mail1;
 
-// Письмо 2
+// Mail 2
 $mail2 = new Mail($config);
-$mail2->setFrom('sender@example.com', 'Отправитель')
-      ->addAddress('user2@example.com', 'Пользователь 2')
-      ->setSubject('Приветствие 2')
-      ->setHtmlBody('<h1>Привет, Пользователь 2!</h1>');
+$mail2->setFrom('sender@example.com', 'Sender')
+      ->addAddress('user2@example.com', 'User 2')
+      ->setSubject('Greeting 2')
+      ->setHtmlBody('<h1>Hello, User 2!</h1>');
 
 $mails[] = $mail2;
 
-// Письмо 3 с высоким приоритетом
+// Mail 3 with high priority
 $mail3 = new Mail($config);
-$mail3->setFrom('sender@example.com', 'Отправитель')
-      ->addAddress('vip@example.com', 'VIP Пользователь')
-      ->setSubject('Срочное сообщение')
-      ->setHtmlBody('<h1>Срочное VIP сообщение!</h1>');
+$mail3->setFrom('sender@example.com', 'Sender')
+      ->addAddress('vip@example.com', 'VIP User')
+      ->setSubject('Urgent message')
+      ->setHtmlBody('<h1>Urgent VIP message!</h1>');
 
 $mails[] = $mail3;
 
-// Добавление писем в очередь с разными приоритетами
+// Add mails to queue with priorities
 foreach ($mails as $index => $mail) {
-    $priority = ($index === 2) ? 1 : 5; // VIP письмо имеет высокий приоритет
+    $priority = ($index === 2) ? 1 : 5; // VIP mail has high priority
     $queue->add($mail, $priority);
 }
 
-echo "Писем в очереди: " . $queue->getSize() . "\n";
+echo "Mails in queue: " . $queue->getSize() . "\n";
 
-// Обработка очереди
+// Process queue
 $results = $queue->process(5);
 
-echo "Результаты обработки:\n";
-echo "- Всего обработано: {$results['processed']}\n";
-echo "- Успешно отправлено: {$results['successful']}\n";
-echo "- Ошибок: {$results['failed']}\n";
-echo "- Повторных попыток: {$results['retried']}\n";
+echo "Processing results:\n";
+echo "- Total processed: {$results['processed']}\n";
+echo "- Successfully sent: {$results['successful']}\n";
+echo "- Errors: {$results['failed']}\n";
+echo "- Retries: {$results['retried']}\n";
 
-// Статистика очереди
+// Queue statistics
 $stats = $queue->getStats();
-echo "\nСтатистика очереди:\n";
-echo "- Всего в очереди: {$stats['total']}\n";
-echo "- Ожидают обработки: {$stats['pending']}\n";
-echo "- Ожидают повторной попытки: {$stats['waiting']}\n";
-echo "- Неудачных: {$stats['failed']}\n";
+echo "\nQueue statistics:\n";
+echo "- Total in queue: {$stats['total']}\n";
+echo "- Pending: {$stats['pending']}\n";
+echo "- Waiting for retry: {$stats['waiting']}\n";
+echo "- Failed: {$stats['failed']}\n";
 
-// Показать неудачные письма
+// Show failed mails
 $failed = $queue->getFailed();
 if (!empty($failed)) {
-    echo "\nНеудачные письма:\n";
+    echo "\nFailed mails:\n";
     foreach ($failed as $failedMail) {
-        echo "- ID: {$failedMail['id']}, Попыток: {$failedMail['retries']}\n";
+        echo "- ID: {$failedMail['id']}, Retries: {$failedMail['retries']}\n";
     }
 }

@@ -5,126 +5,126 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use AdvancedMailer\Mail;
 use AdvancedMailer\Transport\SendGridTransport;
 
-// Конфигурация SendGrid
+// SendGrid configuration
 $apiKey = 'your-sendgrid-api-key-here';
 
-// Создание SendGrid транспорта
+// Create SendGrid transport
 $transport = new SendGridTransport($apiKey);
 
-// Создание экземпляра Mail с SendGrid транспортом
+// Create Mail instance with SendGrid transport
 $mail = new Mail();
 $mail->setTransport($transport);
 
-// Настройка отправителя (должен быть верифицирован в SendGrid)
-$mail->setFrom('verified-sender@example.com', 'Ваш Сервис');
+// Configure sender (must be verified in SendGrid)
+$mail->setFrom('verified-sender@example.com', 'Your Service');
 
-// Добавление получателей
-$mail->addAddress('recipient1@example.com', 'Получатель 1');
-$mail->addAddress('recipient2@example.com', 'Получатель 2');
+// Add recipients
+$mail->addAddress('recipient1@example.com', 'Recipient 1');
+$mail->addAddress('recipient2@example.com', 'Recipient 2');
 
-// Добавление копий
-$mail->addCC('cc@example.com', 'Копия');
-$mail->addBCC('bcc@example.com', 'Скрытая копия');
+// Add CC/BCC
+$mail->addCC('cc@example.com', 'Copy');
+$mail->addBCC('bcc@example.com', 'BCC');
 
-// Настройка reply-to
-$mail->setReplyTo('support@example.com', 'Служба поддержки');
+// Set Reply-To
+$mail->setReplyTo('support@example.com', 'Support');
 
-// Настройка темы и контента
-$mail->setSubject('Тестовое письмо через SendGrid');
+// Set subject and content
+$mail->setSubject('Test email via SendGrid');
 $mail->setHtmlBody('
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #333;">Привет от SendGrid!</h1>
-        <p>Это письмо отправлено через <strong>SendGrid API</strong> используя Advanced Mailer.</p>
+        <h1 style="color: #333;">Hello from SendGrid!</h1>
+        <p>This email was sent using <strong>SendGrid API</strong> via Advanced Mailer.</p>
 
         <div style="background-color: #f0f0f0; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h3>Преимущества SendGrid:</h3>
+            <h3>SendGrid advantages:</h3>
             <ul>
-                <li>Высокая доставляемость</li>
-                <li>Подробная аналитика</li>
-                <li>Масштабируемость</li>
-                <li>Надежная инфраструктура</li>
+                <li>High deliverability</li>
+                <li>Detailed analytics</li>
+                <li>Scalability</li>
+                <li>Reliable infrastructure</li>
             </ul>
         </div>
 
         <p style="color: #666; font-size: 14px;">
-            Это письмо отправлено через Advanced Mailer - улучшенную альтернативу PHPMailer.
+            This email was sent using Advanced Mailer via SendGrid API.
         </p>
     </div>
 ');
-$mail->setAltBody('Привет! Это письмо отправлено через SendGrid API используя Advanced Mailer. Это текстовая версия для клиентов, которые не поддерживают HTML.');
+$mail->setAltBody('Hello! This email was sent using Advanced Mailer via SendGrid API. This is a text version for clients that do not support HTML.');
 
-// Добавление пользовательских заголовков
+// Add custom headers
 $mail->addHeader('X-Mailer', 'Advanced Mailer with SendGrid');
 $mail->addHeader('X-Priority', '1');
 
-// Тестирование соединения перед отправкой
+// Test connection before sending
 if ($transport->testConnection()) {
-    echo "SendGrid соединение успешно установлено.\n";
+    echo "SendGrid connection OK.\n";
 
-    // Отправка письма
+    // Send mail
     try {
         if ($mail->send()) {
-            echo "Письмо успешно отправлено через SendGrid!\n";
+            echo "Mail sent via SendGrid!\n";
         } else {
-            echo "Ошибка отправки письма.\n";
+            echo "Send failed.\n";
         }
     } catch (Exception $e) {
-        echo "Ошибка: " . $e->getMessage() . "\n";
+        echo "Error: " . $e->getMessage() . "\n";
     }
 } else {
-    echo "Не удалось установить соединение с SendGrid. Проверьте API ключ.\n";
+    echo "Failed to connect to SendGrid. Check API key.\n";
 }
 
-// Пример массовой рассылки
-echo "\n=== Пример массовой рассылки ===\n";
+// Bulk mailing example
+echo "\n=== Bulk mailing example ===\n";
 
-// Создание шаблонного письма для массовой рассылки
+// Create template for bulk mailing
 $newsletterTemplate = '
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Еженедельная рассылка</title>
+    <title>Weekly Newsletter</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="color: #2c3e50;">Привет, {{name}}!</h1>
+    <h1 style="color: #2c3e50;">Hello, {{name}}!</h1>
 
-    <p>Вот наша еженедельная подборка интересных новостей:</p>
+    <p>Here\'s our weekly newsletter with interesting news:</p>
 
     <div style="background-color: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <h3>🆕 Новые возможности</h3>
+        <h3>🆕 New features</h3>
         <ul>
-            <li>Добавлена поддержка темной темы</li>
-            <li>Улучшена производительность на 30%</li>
-            <li>Новые интеграции с популярными сервисами</li>
+            <li>Added dark theme support</li>
+            <li>Performance improved by 30%</li>
+            <li>New integrations with popular services</li>
         </ul>
     </div>
 
     <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <h3>📅 Ближайшие события</h3>
-        <p><strong>Вебинар:</strong> "Как улучшить доставляемость email" - {{date}}</p>
-        <p><a href="{{webinar_link}}" style="color: #007bff;">Регистрация</a></p>
+        <h3>📅 Upcoming events</h3>
+        <p><strong>Webinar:</strong> "How to improve email deliverability" - {{date}}</p>
+        <p><a href="{{webinar_link}}" style="color: #007bff;">Registration</a></p>
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{unsubscribe_link}}" style="color: #6c757d; font-size: 12px;">Отписаться от рассылки</a>
+        <a href="{{unsubscribe_link}}" style="color: #6c757d; font-size: 12px;">Unsubscribe from newsletter</a>
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
     <p style="color: #666; font-size: 14px; text-align: center;">
-        Вы получили это письмо, потому что подписались на рассылку.<br>
+        You received this email because you subscribed to our newsletter.<br>
         {{company_name}} | {{current_year}}
     </p>
 </body>
 </html>
 ';
 
-// Список подписчиков для массовой рассылки
+// Subscribers list for bulk mailing
 $subscribers = [
-    ['email' => 'user1@example.com', 'name' => 'Иван'],
-    ['email' => 'user2@example.com', 'name' => 'Мария'],
-    ['email' => 'user3@example.com', 'name' => 'Алексей'],
+    ['email' => 'user1@example.com', 'name' => 'John'],
+    ['email' => 'user2@example.com', 'name' => 'Maria'],
+    ['email' => 'user3@example.com', 'name' => 'Alex'],
 ];
 
 $successful = 0;
@@ -134,40 +134,40 @@ foreach ($subscribers as $subscriber) {
     $newsletterMail = new Mail();
     $newsletterMail->setTransport($transport);
 
-    $newsletterMail->setFrom('newsletter@example.com', 'Еженедельная рассылка')
+    $newsletterMail->setFrom('newsletter@example.com', 'Weekly Newsletter')
                    ->addAddress($subscriber['email'], $subscriber['name'])
-                   ->setSubject('Ваша еженедельная подборка новостей')
+                   ->setSubject('Your weekly newsletter')
                    ->setHtmlBody($newsletterTemplate);
 
-    // Замена переменных в шаблоне
+    // Replace template variables
     $body = $newsletterMail->getHtmlBody();
     $body = str_replace('{{name}}', $subscriber['name'], $body);
     $body = str_replace('{{date}}', '15 сентября 2024', $body);
     $body = str_replace('{{webinar_link}}', 'https://example.com/webinar', $body);
     $body = str_replace('{{unsubscribe_link}}', 'https://example.com/unsubscribe', $body);
-    $body = str_replace('{{company_name}}', 'Тестовая компания', $body);
+    $body = str_replace('{{company_name}}', 'Test company', $body);
     $body = str_replace('{{current_year}}', date('Y'), $body);
 
     $newsletterMail->setHtmlBody($body);
 
     try {
         if ($newsletterMail->send()) {
-            echo "✓ Письмо отправлено: {$subscriber['email']}\n";
+            echo "✓ Mail sent: {$subscriber['email']}\n";
             $successful++;
         } else {
-            echo "✗ Ошибка отправки: {$subscriber['email']}\n";
+            echo "✗ Error sending: {$subscriber['email']}\n";
             $failed++;
         }
     } catch (Exception $e) {
-        echo "✗ Ошибка: {$subscriber['email']} - " . $e->getMessage() . "\n";
+        echo "✗ Error: {$subscriber['email']} - " . $e->getMessage() . "\n";
         $failed++;
     }
 
-    // Небольшая задержка между отправками
+    // Short delay between sends
     sleep(1);
 }
 
-echo "\n=== Результаты массовой рассылки ===\n";
-echo "Успешно отправлено: $successful\n";
-echo "Ошибок: $failed\n";
-echo "Всего: " . count($subscribers) . "\n";
+echo "\n=== Bulk mailing results ===\n";
+echo "Successfully sent: $successful\n";
+echo "Errors: $failed\n";
+echo "Total: " . count($subscribers) . "\n";

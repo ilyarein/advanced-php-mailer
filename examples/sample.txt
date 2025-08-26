@@ -1,16 +1,16 @@
-Это пример текстового файла для демонстрации вложений в Advanced Mailer.
+This is an example of a text file for demonstrating attachments in Advanced Mailer.
 
-Файл создан: <?php echo date('Y-m-d H:i:s'); ?>
+The file was created: <?php echo date('Y-m-d H:i:s'); ?>
 
-Возможности Advanced Mailer:
-- Отправка HTML и текстовых писем
-- Вложения файлов
-- Встроенные изображения
-- Шаблонизация
-- Очереди отправки
-- PSR-3 совместимое логирование
-- Валидация email адресов
-- Поддержка SMTP, SendGrid
-- Полная независимость от внешних зависимостей
+Advanced Mailer Features:
+- Sending HTML and text emails
+- File attachments
+- Embedded images
+- Templating
+- Sending queues
+- PSR-3 compatible logging
+- Validation of email addresses
+- SMTP, SendGrid support
+- Complete independence from external dependencies
 
-Сайт проекта: https://github.com/advanced-mailer/mailer
+Project website: https://github.com/ilyarein/advanced-php-mailer

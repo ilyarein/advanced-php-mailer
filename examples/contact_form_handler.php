@@ -1,6 +1,6 @@
 <?php
 
-// Пример безопасного обработчика контактной формы для использования с Advanced Mailer
+// Example secure contact form handler for use with Advanced Mailer
 
 require_once __DIR__ . '/../src/Mail.php';
 require_once __DIR__ . '/../src/Transport/SmtpTransport.php';
@@ -13,7 +13,7 @@ use AdvancedMailer\Validation\EmailValidator;
 use AdvancedMailer\Exception\MailException;
 use AdvancedMailer\LoggerInterface;
 
-// Простая реализация логгера в файл
+// Simple file logger implementation
 class FileLogger implements LoggerInterface
 {
     private string $filePath;
@@ -41,7 +41,7 @@ class FileLogger implements LoggerInterface
     public function log($level, string $message, array $context = []): void { $this->write((string)$level, $message, $context); }
 }
 
-// Настройки: замените на реальные значения
+// Settings: replace with real values
 $smtpConfig = [
     'smtp_host' => 'smtp.example.com',
     'smtp_port' => 587,
@@ -55,14 +55,14 @@ $smtpConfig = [
 
 $log = new FileLogger(__DIR__ . '/../logs/contact_form.log');
 
-// Только POST
+// Only accept POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
-// Получаем поля
+// Read input fields
 $rawName = trim((string)($_POST['name'] ?? ''));
 $rawEmail = trim((string)($_POST['email'] ?? ''));
 $rawMessage = trim((string)($_POST['message'] ?? ''));
@@ -71,23 +71,23 @@ $validator = new EmailValidator();
 
 $errors = [];
 
-// Валидация имени
+// Validate name
 if ($rawName === '' || mb_strlen($rawName) > 200) {
     $errors[] = 'Invalid name';
 }
 
-// Валидация email
+// Validate email
 $cleanEmail = $validator->sanitize($rawEmail);
 if ($cleanEmail === '' || !$validator->isValidQuick($cleanEmail)) {
     $errors[] = 'Invalid email';
 }
 
-// Валидация сообщения
+// Validate message
 if ($rawMessage === '' || mb_strlen($rawMessage) > 10000) {
     $errors[] = 'Invalid message';
 }
 
-// Обработка вложения (опционально)
+// Handle attachment (optional)
 $attachmentPath = null;
 if (!empty($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
     $uploaded = $_FILES['attachment'];
@@ -97,7 +97,7 @@ if (!empty($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_E
     } elseif (!in_array($ext, $smtpConfig['allowed_extensions'], true)) {
         $errors[] = 'Attachment type not allowed';
     } else {
-        // Временное имя файла (используем tmp_name — файл доступен для чтения)
+        // Temporary file name (use tmp_name — file is readable)
         $attachmentPath = $uploaded['tmp_name'];
     }
 }
@@ -109,12 +109,12 @@ if (!empty($errors)) {
     exit;
 }
 
-// Подготавливаем письмо
-$siteFromEmail = 'no-reply@example.com'; // должен быть действительным для вашего домена
-$siteRecipientEmail = 'contact@example.com'; // куда приходят сообщения
+// Prepare message
+$siteFromEmail = 'no-reply@example.com'; // must be valid for your domain
+$siteRecipientEmail = 'contact@example.com'; // where messages come
 
 $mail = new Mail($smtpConfig);
-// Явно установить транспорт, чтобы использовать наш логгер
+// Explicitly set transport to use our logger
 $smtpTransport = new SmtpTransport($smtpConfig, $log);
 $mail->setTransport($smtpTransport);
 $mail->setLogger($log);
@@ -124,7 +124,7 @@ $mail->setReplyTo($cleanEmail, $rawName);
 $mail->addAddress($siteRecipientEmail);
 $mail->setSubject('New contact form message from ' . $rawName);
 
-// Подготовка HTML и plain
+// Prepare HTML and plain text bodies
 $safeName = htmlspecialchars($rawName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $safeEmail = htmlspecialchars($cleanEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $safeMessage = nl2br(htmlspecialchars($rawMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
@@ -140,7 +140,7 @@ $mail->setHtmlBody($htmlBody);
 $mail->setAltBody($plainBody);
 
 if ($attachmentPath !== null) {
-    // Mail::addAttachment проверяет существование файла
+    // Mail::addAttachment checks that the file exists
     $mail->addAttachment($attachmentPath, basename($_FILES['attachment']['name']));
 }
 

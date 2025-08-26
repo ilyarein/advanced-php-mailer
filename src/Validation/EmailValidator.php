@@ -3,16 +3,16 @@
 namespace AdvancedMailer\Validation;
 
 /**
- * Email address validation service - без внешних зависимостей
+ * Email address validation service - without external dependencies
  */
 class EmailValidator
 {
-    // RFC 5322 Official Standard Email Regex (упрощенная версия)
+    // RFC 5322 Official Standard Email Regex (simplified version)
     private const EMAIL_REGEX = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/';
 
     public function __construct()
     {
-        // Нет внешних зависимостей
+        // No external dependencies
     }
 
     /**
@@ -24,17 +24,17 @@ class EmailValidator
             return false;
         }
 
-        // Базовая валидация формата
+        // Basic format validation
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
 
-        // Проверка с помощью регулярного выражения (RFC 5322)
+        // Check with regular expression (RFC 5322)
         if (!preg_match(self::EMAIL_REGEX, $email)) {
             return false;
         }
 
-        // Извлечение домена и проверка MX записей
+        // Extract domain and check MX records
         $domain = $this->getDomain($email);
         if (empty($domain)) {
             return false;
@@ -52,12 +52,12 @@ class EmailValidator
             return false;
         }
 
-        // Базовая валидация формата
+        // Basic format validation
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
 
-        // Проверка с помощью регулярного выражения (RFC 5322)
+        // Check with regular expression (RFC 5322)
         return (bool) preg_match(self::EMAIL_REGEX, $email);
     }
 

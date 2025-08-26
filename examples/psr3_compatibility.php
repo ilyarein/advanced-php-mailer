@@ -4,16 +4,15 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use AdvancedMailer\Mail;
 use AdvancedMailer\LoggerInterface;
-use Psr\Log\LoggerInterface as PsrLoggerInterface; // Для демонстрации совместимости
+use Psr\Log\LoggerInterface as PsrLoggerInterface; // For demonstration of compatibility
 
 /**
- * Демонстрация PSR-3 совместимости
+ * PSR-3 compatibility demo
  *
- * Этот пример показывает, как Advanced Mailer может работать
- * с любым PSR-3 совместимым логгером
+ * This example shows how Advanced Mailer can work with any PSR-3 compatible logger
  */
 
-// Конфигурация
+// Configuration
 $config = [
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
@@ -22,12 +21,12 @@ $config = [
     'smtp_encryption' => 'tls'
 ];
 
-echo "=== PSR-3 Совместимость: Собственная реализация ===\n";
+echo "=== PSR-3 compatibility: built-in implementation ===\n";
 
-// 1. Использование собственной PSR-3 реализации
+// 1. Using the built-in PSR-3 implementation
 $mail = new Mail($config);
 
-// Наша собственная реализация уже совместима с PSR-3
+// The built-in logger is already PSR-3 compatible
 $customLogger = new class implements LoggerInterface {
     public function emergency(string $message, array $context = []): void {
         echo "[EMERGENCY] $message\n";
@@ -60,26 +59,26 @@ $customLogger = new class implements LoggerInterface {
 
 $mail->setLogger($customLogger);
 
-// Настройка письма
-$mail->setFrom('sender@example.com', 'Тестовый отправитель');
-$mail->addAddress('recipient@example.com', 'Тестовый получатель');
-$mail->setSubject('PSR-3 совместимость');
-$mail->setHtmlBody('<h1>Тест PSR-3 логирования</h1>');
+// Configure message
+ $mail->setFrom('sender@example.com', 'Test Sender');
+ $mail->addAddress('recipient@example.com', 'Test Recipient');
+ $mail->setSubject('PSR-3 compatibility');
+ $mail->setHtmlBody('<h1>PSR-3 logging test</h1>');
 
-echo "Создание письма...\n";
+echo "Creating message...\n";
 
 try {
-    // Это вызовет различные методы логирования
+    // This will call various logging methods
     $mail->send();
 } catch (Exception $e) {
-    echo "Ошибка при отправке: " . $e->getMessage() . "\n";
+    echo "Send error: " . $e->getMessage() . "\n";
 }
 
-echo "\n=== Готовность к работе с внешними PSR-3 логгерами ===\n";
+echo "\n=== Ready to work with external PSR-3 loggers ===\n";
 
-// 2. Демонстрация готовности к Monolog (если он установлен)
+// 2. Demonstrate Monolog availability (if installed)
 if (class_exists('Monolog\Logger')) {
-    echo "Monolog найден! Можно использовать:\n";
+    echo "Monolog found! You can use it:\n";
 
     echo "```php\n";
     echo "use Monolog\Logger;\n";
@@ -89,33 +88,33 @@ if (class_exists('Monolog\Logger')) {
     echo "\$monolog->pushHandler(new StreamHandler('logs/mail.log'));\n";
     echo "\n";
     echo "\$mail = new Mail(\$config);\n";
-    echo "\$mail->setLogger(\$monolog); // Полная совместимость!\n";
+    echo "\$mail->setLogger(\$monolog); // Full compatibility!\n";
     echo "```\n";
 } else {
-    echo "Monolog не установлен. Для использования установите:\n";
+    echo "Monolog not installed. To use it, run:\n";
     echo "composer require monolog/monolog\n\n";
 
-    echo "Пример использования с Monolog:\n";
+    echo "Example using Monolog:\n";
     echo "```php\n";
     echo "\$monolog = new Monolog\Logger('mail');\n";
     echo "\$monolog->pushHandler(new Monolog\Handler\StreamHandler('logs/mail.log'));\n";
     echo "\n";
     echo "\$mail = new Mail(\$config);\n";
-    echo "\$mail->setLogger(\$monolog); // Работает без изменений!\n";
+    echo "\$mail->setLogger(\$monolog); // Works without changes!\n";
     echo "```\n";
 }
 
-echo "\n=== Преимущества PSR-3 совместимости ===\n";
-echo "✓ Стандартизированный интерфейс\n";
-echo "✓ Легкая замена логгеров\n";
-echo "✓ Совместимость с любыми PSR-3 реализациями\n";
-echo "✓ Богатый контекст логирования\n";
-echo "✓ 8 уровней важности\n";
-echo "✓ Структурированные данные в логах\n";
+echo "\n=== PSR-3 compatibility benefits ===\n";
+echo "✓ Standardized interface\n";
+echo "✓ Easy logger replacement\n";
+echo "✓ Works with any PSR-3 implementations\n";
+echo "✓ Rich logging context\n";
+echo "✓ 8 severity levels\n";
+echo "✓ Structured log data\n";
 
-echo "\n=== Пример использования с разными логгерами ===\n";
+echo "\n=== Example of using with different loggers ===\n";
 
-// 3. Пример адаптера для других систем логирования
+// 3. Example adapter for legacy logging systems
 class LegacyLoggerAdapter implements LoggerInterface {
     private $legacyLogger;
 
@@ -160,7 +159,7 @@ class LegacyLoggerAdapter implements LoggerInterface {
     }
 }
 
-echo "Адаптер для устаревших систем логирования создан!\n";
-echo "Теперь любую систему можно адаптировать к PSR-3.\n\n";
+echo "Legacy logger adapter created!\n";
+echo "You can adapt any legacy logger to PSR-3 now.\n\n";
 
-echo "🎉 Advanced Mailer полностью совместим с PSR-3!\n";
+echo "🎉 Advanced Mailer is PSR-3 compatible!\n";

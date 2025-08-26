@@ -6,7 +6,7 @@ use AdvancedMailer\Mail;
 use AdvancedMailer\LoggerInterface;
 use AdvancedMailer\NullLogger;
 
-// Конфигурация SMTP
+// SMTP configuration
 $config = [
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
@@ -15,7 +15,7 @@ $config = [
     'smtp_encryption' => 'tls'
 ];
 
-// Наша собственная PSR-3 совместимая реализация логгера
+// Simple PSR-3 compatible file logger implementation
 class FileLogger implements LoggerInterface {
     private string $logFile;
 
@@ -64,59 +64,59 @@ class FileLogger implements LoggerInterface {
     }
 }
 
-// Создание логгера
+// Create logger
 $logger = new FileLogger('mail_operations.log');
 
-// Создание экземпляра Mail с PSR-3 совместимым логгером
+// Create Mail instance with PSR-3 compatible logger
 $mail = new Mail($config);
 $mail->setLogger($logger);
 
-// Настройка отправителя
-$mail->setFrom('your-email@gmail.com', 'Ваш Имя');
+// Configure sender
+$mail->setFrom('your-email@gmail.com', 'Your Name');
 
-// Добавление получателей
-$mail->addAddress('recipient1@example.com', 'Получатель 1');
-$mail->addAddress('recipient2@example.com'); // Без имени
+// Add recipients
+$mail->addAddress('recipient1@example.com', 'Recipient 1');
+$mail->addAddress('recipient2@example.com'); // No name
 
-// Добавление копий
-$mail->addCC('cc@example.com', 'Копия');
-$mail->addBCC('bcc@example.com'); // Скрытая копия
+// Add CC/BCC
+$mail->addCC('cc@example.com', 'CC');
+$mail->addBCC('bcc@example.com'); // BCC
 
-// Настройка reply-to
-$mail->setReplyTo('reply@example.com', 'Ответить сюда');
+// Set Reply-To
+$mail->setReplyTo('reply@example.com', 'Reply here');
 
-// Настройка темы и контента
-$mail->setSubject('Тестовое письмо от Advanced Mailer');
-$mail->setHtmlBody('
-    <h1>Привет!</h1>
-    <p>Это <strong>HTML</strong> версия письма.</p>
-    <p>С наилучшими пожеланиями,<br>Advanced Mailer</p>
-');
-$mail->setAltBody('Привет! Это текстовая версия письма. С наилучшими пожеланиями, Advanced Mailer');
+// Set subject and content
+$mail->setSubject('Test message from Advanced Mailer');
+$mail->setHtmlBody(
+    '<h1>Hello!</h1>' .
+    '<p>This is the <strong>HTML</strong> version of the message.</p>' .
+    '<p>Best regards,<br>Advanced Mailer</p>'
+);
+$mail->setAltBody('Hello! This is the plain-text version. Best regards, Advanced Mailer');
 
-// Демонстрация различных уровней PSR-3 логирования
-echo "=== Демонстрация PSR-3 уровней логирования ===\n";
+// Demonstrate PSR-3 log levels
+echo "=== Demonstration of PSR-3 log levels ===\n";
 
-$logger->emergency('Критическая ошибка системы', ['system' => 'mail', 'impact' => 'high']);
-$logger->alert('Требуется срочное вмешательство', ['component' => 'smtp', 'issue' => 'connection']);
-$logger->critical('Критическая ошибка отправки', ['recipients' => 5, 'transport' => 'smtp']);
-$logger->error('Ошибка валидации email', ['email' => 'invalid-email', 'validation' => 'failed']);
-$logger->warning('Превышен лимит вложений', ['size' => '15MB', 'limit' => '10MB']);
-$logger->notice('Используется альтернативный транспорт', ['transport' => 'sendgrid']);
-$logger->info('Отправка письма начата', ['recipients' => 1, 'subject' => 'Тест']);
-$logger->debug('Отладочная информация', ['memory_usage' => memory_get_usage(), 'timestamp' => microtime(true)]);
+$logger->emergency('System critical error', ['system' => 'mail', 'impact' => 'high']);
+$logger->alert('Immediate intervention required', ['component' => 'smtp', 'issue' => 'connection']);
+$logger->critical('Sending critical error', ['recipients' => 5, 'transport' => 'smtp']);
+$logger->error('Email validation error', ['email' => 'invalid-email', 'validation' => 'failed']);
+$logger->warning('Attachment limit exceeded', ['size' => '15MB', 'limit' => '10MB']);
+$logger->notice('Using alternative transport', ['transport' => 'sendgrid']);
+$logger->info('Sending mail started', ['recipients' => 1, 'subject' => 'Test']);
+$logger->debug('Debug information', ['memory_usage' => memory_get_usage(), 'timestamp' => microtime(true)]);
 
-echo "Логи записаны в файл: mail_operations.log\n\n";
+echo "Logs written to: mail_operations.log\n\n";
 
-// Отправка письма
+// Send mail
 try {
     if ($mail->send()) {
-        echo "Письмо отправлено успешно!\n";
-        echo "Проверьте логи в файле mail_operations.log для подробной информации\n";
+        echo "Mail sent successfully!\n";
+        echo "Check the mail_operations.log file for detailed information\n";
     } else {
-        echo "Ошибка отправки письма.\n";
+        echo "Mail sending error.\n";
     }
 } catch (Exception $e) {
-    echo "Ошибка: " . $e->getMessage() . "\n";
-    echo "Подробная информация в логах\n";
+    echo "Error: " . $e->getMessage() . "\n";
+    echo "Detailed information in logs\n";
 }

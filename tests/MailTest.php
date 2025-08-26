@@ -33,7 +33,7 @@ class MailTest extends TestCase
         $mail = new Mail($this->testConfig);
         $mail->setFrom('sender@example.com', 'Sender Name');
 
-        // Проверка через отражение, так как свойства приватные
+        // Check through reflection, since properties are private
         $reflection = new \ReflectionClass($mail);
         $property = $reflection->getProperty('fromEmail');
         $property->setAccessible(true);
@@ -122,22 +122,22 @@ class MailTest extends TestCase
     {
         $validator = new EmailValidator();
 
-        // Тест валидных email
+        // Test valid emails
         $this->assertTrue($validator->isValidQuick('valid@example.com'));
         $this->assertTrue($validator->isValidQuick('user.name@domain.co.uk'));
         $this->assertTrue($validator->isValidQuick('test+tag@gmail.com'));
 
-        // Тест невалидных email
+        // Test invalid emails
         $this->assertFalse($validator->isValidQuick('invalid-email'));
         $this->assertFalse($validator->isValidQuick(''));
         $this->assertFalse($validator->isValidQuick('test@'));
         $this->assertFalse($validator->isValidQuick('@domain.com'));
 
-        // Тест санитизации
+        // Test sanitization
         $this->assertEquals('test@example.com', $validator->sanitize('  TEST@EXAMPLE.COM  '));
         $this->assertEquals('user@domain.com', $validator->sanitize('user@domain.com'));
 
-        // Тест извлечения домена
+        // Test domain extraction
         $this->assertEquals('example.com', $validator->getDomain('user@example.com'));
         $this->assertEquals('', $validator->getDomain('invalid-email'));
     }
