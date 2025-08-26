@@ -1,4 +1,4 @@
-# Advanced Mailer — A fully Composer-free and politics-free PHP mailer. No PhD required
+# Advanced Mailer — A fully Composer-free and politics-free PHP mailer. No PhD required.
 
 <p>
   <img alt="CI" src="https://github.com/ilyarein/advanced-php-mailer/actions/workflows/ci.yml/badge.svg" />
