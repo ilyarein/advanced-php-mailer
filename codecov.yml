@@ -1,0 +1,19 @@
+codecov:
+  require_ci_to_pass: no
+coverage:
+  status:
+    project:
+      default:
+        target: 40%
+    patch:
+      default:
+        target: 10%
+comment:
+  layout: "reach, diff, file"
+  behavior: default
+  require_changes: false
+exclude:
+  - "examples/**"
+  - "docs/**"
+  - "tests/**"
+

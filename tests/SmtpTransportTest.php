@@ -31,9 +31,11 @@ class SmtpTransportTest extends TestCase
         $method = $ref->getMethod('prepareTextPart');
         $method->setAccessible(true);
 
-        $result = $method->invoke($transport, "Hello");
+        // Non-ASCII input should use 8bit when server supports it
+        $nonAscii = "Привет мир";
+        $result = $method->invoke($transport, $nonAscii);
         $this->assertEquals('8bit', $result['encoding']);
-        $this->assertStringContainsString('Hello', $result['content']);
+        $this->assertStringContainsString($nonAscii, $result['content']);
     }
 
     public function testPrepareTextPartNonAsciiWithout8bitFallsBack()
@@ -47,10 +49,21 @@ class SmtpTransportTest extends TestCase
         $method = $ref->getMethod('prepareTextPart');
         $method->setAccessible(true);
 
-        $result = $method->invoke($transport, "Hello");
+        // Non-ASCII input should fall back to quoted-printable or base64 when 8bit is not supported
+        $nonAscii2 = "Привет мир";
+        $result = $method->invoke($transport, $nonAscii2);
         $this->assertIsArray($result);
         $this->assertContains($result['encoding'], ['quoted-printable', 'base64']);
         $this->assertNotEmpty($result['content']);
+        if ($result['encoding'] === 'quoted-printable') {
+            // quoted-printable encoded content contains '=' soft breaks or =XX sequences
+            $this->assertStringContainsString('=', $result['content']);
+        } else {
+            // base64 content should be decodable to non-empty binary
+            $decoded = base64_decode(str_replace(["\r\n", "\n"], '', $result['content']), true);
+            $this->assertNotFalse($decoded);
+            $this->assertNotEmpty($decoded);
+        }
     }
 
     public function testBuildEmailContentIncludesMultipartAlternative()

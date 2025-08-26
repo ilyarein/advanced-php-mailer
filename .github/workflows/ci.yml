@@ -36,10 +36,14 @@ jobs:
           fi
 
       - name: Run tests (phpunit + coverage)
+        env:
+          # ensure xdebug generates coverage when available in runner
+          XDEBUG_MODE: coverage
         run: |
           if [ -f phpunit.xml ] || [ -f phpunit.xml.dist ]; then
             echo "Running phpunit and generating coverage.xml"
-            vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml || true
+            # force xdebug coverage mode if extension available
+            php -d xdebug.mode=coverage vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml || true
           else
             echo "phpunit config not found, skipping"
           fi
