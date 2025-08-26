@@ -49,6 +49,7 @@ class SmtpTransport implements TransportInterface
     {
         try {
             $this->connect();
+            $this->logger->debug('After connect() in send()', ['connected' => $this->connected]);
 
             // Send MAIL FROM
             $mailFromCmd = "MAIL FROM:<{$message['from']['email']}>";
@@ -144,6 +145,16 @@ class SmtpTransport implements TransportInterface
         $encryption = $this->config['smtp_encryption'];
         $timeout = $this->config['smtp_timeout'];
 
+        // Debug: beginning of connect (mask sensitive fields)
+        $cfgDebug = $this->config;
+        if (isset($cfgDebug['smtp_password'])) {
+            $cfgDebug['smtp_password'] = '***';
+        }
+        if (isset($cfgDebug['dkim_private_key'])) {
+            $cfgDebug['dkim_private_key'] = '***';
+        }
+        $this->logger->debug('SMTP connect starting', ['host' => $host, 'port' => $port, 'encryption' => $encryption, 'timeout' => $timeout, 'config' => $cfgDebug]);
+
         // Create socket
         $socket = @fsockopen(
             $encryption === 'ssl' ? "ssl://{$host}" : $host,
@@ -156,9 +167,10 @@ class SmtpTransport implements TransportInterface
         if (!$socket) {
             throw new TransportException("Could not connect to SMTP server: {$errstr} ({$errno})");
         }
-
         $this->socket = $socket;
         stream_set_timeout($this->socket, $timeout);
+
+        $this->logger->debug('SMTP socket created', ['meta' => stream_get_meta_data($this->socket)]);
 
         // Read greeting
         $response = $this->readResponse();
@@ -166,65 +178,81 @@ class SmtpTransport implements TransportInterface
             throw new TransportException("SMTP server greeting failed: {$response}");
         }
 
-        // Send EHLO
-        $this->sendCommand('EHLO ' . gethostname());
-        $response = $this->readResponse();
+        // Send EHLO (sendCommand already reads the response)
+        $response = $this->sendCommand('EHLO ' . gethostname());
 
         // Detect SMTPUTF8 support
         $this->smtpUtf8Supported = (strpos($response, 'SMTPUTF8') !== false);
 
         // Try STARTTLS if requested
         if ($encryption === 'tls' && strpos($response, 'STARTTLS') !== false) {
+            $this->logger->debug('SMTP initiating STARTTLS');
             $this->sendCommand('STARTTLS');
             $response = $this->readResponse();
 
+            $this->logger->debug('SMTP STARTTLS response', ['response' => $response]);
             if ($this->isSuccessResponse($response)) {
-                stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                $ok = @stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                $this->logger->debug('stream_socket_enable_crypto result', ['ok' => $ok, 'meta' => stream_get_meta_data($this->socket)]);
                 // Re-send EHLO after STARTTLS
                 $this->sendCommand('EHLO ' . gethostname());
                 $this->readResponse();
+            } else {
+                $this->logger->warning('STARTTLS was rejected by server', ['response' => $response]);
             }
         }
 
         // Authenticate if credentials provided or XOAUTH2 token
+        $this->logger->debug('SMTP pre-auth check', ['username_set' => !empty($this->config['smtp_username']), 'password_set' => !empty($this->config['smtp_password']), 'oauth_set' => !empty($this->config['smtp_oauth_token'])]);
         if (!empty($this->config['smtp_username']) && (!empty($this->config['smtp_password']) || !empty($this->config['smtp_oauth_token']))) {
+            $this->logger->debug('SMTP about to call authenticate() — adding short pause to avoid timing issues');
+            // small pause to allow server buffers to settle (diagnostic)
+            usleep(100000); // 100ms
+            // mark entry to authenticate
+            $this->logger->debug('SMTP authenticate entry marker');
             $this->authenticate();
+            $this->logger->debug('SMTP authenticate() finished');
+        } else {
+            $this->logger->debug('SMTP authentication skipped (no credentials)');
         }
 
         $this->connected = true;
-        $this->logger->info('SMTP connection established', ['host' => $host, 'port' => $port]);
+        $this->logger->info('SMTP connection established', ['host' => $host, 'port' => $port, 'socket_meta' => stream_get_meta_data($this->socket)]);
     }
 
     private function authenticate(): void
     {
         $method = strtolower($this->config['smtp_auth_method'] ?? 'login');
+        $this->logger->debug('SMTP authenticate start', ['method' => $method, 'user' => isset($this->config['smtp_username']) ? substr($this->config['smtp_username'], 0, 3) . '***' : null]);
 
         switch ($method) {
             case 'plain':
                 // AUTH PLAIN <base64(\0user\0pass)>
                 $auth = "\0" . $this->config['smtp_username'] . "\0" . $this->config['smtp_password'];
-                $this->sendCommand('AUTH PLAIN ' . base64_encode($auth));
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH PLAIN sending');
+                $response = $this->sendCommand('AUTH PLAIN ' . base64_encode($auth));
+                $this->logger->debug('SMTP AUTH PLAIN response', ['response' => $response]);
                 if (!$this->isSuccessResponse($response)) {
-                    throw new TransportException('SMTP authentication failed - PLAIN rejected');
+                    throw new TransportException('SMTP authentication failed - PLAIN rejected: ' . $response);
                 }
                 break;
 
             case 'cram-md5':
                 // AUTH CRAM-MD5 -> server sends base64 challenge
-                $this->sendCommand('AUTH CRAM-MD5');
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH CRAM-MD5 start');
+                $response = $this->sendCommand('AUTH CRAM-MD5');
+                $this->logger->debug('SMTP AUTH CRAM-MD5 challenge', ['response' => $response]);
                 if (substr($response, 0, 3) !== '334') {
-                    throw new TransportException('SMTP authentication failed - CRAM-MD5 not supported');
+                    throw new TransportException('SMTP authentication failed - CRAM-MD5 not supported: ' . $response);
                 }
                 $challenge = trim(substr($response, 4));
                 $challenge = base64_decode($challenge);
                 $digest = hash_hmac('md5', $challenge, $this->config['smtp_password']);
                 $responseStr = $this->config['smtp_username'] . ' ' . $digest;
-                $this->sendCommand(base64_encode($responseStr));
-                $response = $this->readResponse();
+                $response = $this->sendCommand(base64_encode($responseStr));
+                $this->logger->debug('SMTP AUTH CRAM-MD5 response', ['response' => $response]);
                 if (!$this->isSuccessResponse($response)) {
-                    throw new TransportException('SMTP authentication failed - CRAM-MD5 rejected');
+                    throw new TransportException('SMTP authentication failed - CRAM-MD5 rejected: ' . $response);
                 }
                 break;
 
@@ -235,34 +263,38 @@ class SmtpTransport implements TransportInterface
                     throw new TransportException('SMTP XOAUTH2 token not provided');
                 }
                 $authStr = 'user=' . $this->config['smtp_username'] . "\x01auth=Bearer " . $token . "\x01\x01";
-                $this->sendCommand('AUTH XOAUTH2 ' . base64_encode($authStr));
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH XOAUTH2 sending');
+                $response = $this->sendCommand('AUTH XOAUTH2 ' . base64_encode($authStr));
+                $this->logger->debug('SMTP AUTH XOAUTH2 response', ['response' => $response]);
                 if (!$this->isSuccessResponse($response)) {
-                    throw new TransportException('SMTP authentication failed - XOAUTH2 rejected');
+                    throw new TransportException('SMTP authentication failed - XOAUTH2 rejected: ' . $response);
                 }
                 break;
 
             case 'login':
             default:
                 // AUTH LOGIN
-                $this->sendCommand('AUTH LOGIN');
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH LOGIN start');
+                $response = $this->sendCommand('AUTH LOGIN');
+                $this->logger->debug('SMTP AUTH LOGIN response', ['response' => $response]);
                 if (substr($response, 0, 3) !== '334') {
-                    throw new TransportException('SMTP authentication failed - AUTH LOGIN not supported');
+                    throw new TransportException('SMTP authentication failed - AUTH LOGIN not supported: ' . $response);
                 }
 
                 // Send username (base64 encoded)
-                $this->sendCommand(base64_encode($this->config['smtp_username']));
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH sending username (base64)');
+                $response = $this->sendCommand(base64_encode($this->config['smtp_username']));
+                $this->logger->debug('SMTP AUTH username response', ['response' => $response]);
                 if (substr($response, 0, 3) !== '334') {
-                    throw new TransportException('SMTP authentication failed - username rejected');
+                    throw new TransportException('SMTP authentication failed - username rejected: ' . $response);
                 }
 
                 // Send password (base64 encoded)
-                $this->sendCommand(base64_encode($this->config['smtp_password']));
-                $response = $this->readResponse();
+                $this->logger->debug('SMTP AUTH sending password (base64)');
+                $response = $this->sendCommand(base64_encode($this->config['smtp_password']));
+                $this->logger->debug('SMTP AUTH password response', ['response' => $response]);
                 if (!$this->isSuccessResponse($response)) {
-                    throw new TransportException('SMTP authentication failed - password rejected');
+                    throw new TransportException('SMTP authentication failed - password rejected: ' . $response);
                 }
                 break;
         }
@@ -287,23 +319,30 @@ class SmtpTransport implements TransportInterface
         }
     }
 
-    private function sendCommand(string $command): void
+    private function sendCommand(string $command): string
     {
         if (!$this->socket) {
             throw new TransportException('SMTP connection not established');
         }
 
-        $this->logger->debug('SMTP command sent', ['command' => $command]);
-        fwrite($this->socket, $command . "\r\n");
+        $this->logger->debug('SMTP command send start', ['command' => $command]);
+        $bytes = @fwrite($this->socket, $command . "\r\n");
+        $meta = @stream_get_meta_data($this->socket);
+        $this->logger->debug('SMTP command written', ['command' => $command, 'bytes' => $bytes, 'meta' => $meta]);
 
         // For commands other than DATA we must read the immediate response
         $cmdPrefix = strtoupper(substr($command, 0, 4));
         if ($cmdPrefix !== 'DATA') {
+            $this->logger->debug('SMTP waiting for response', ['command' => $command]);
             $response = $this->readResponse();
+            $this->logger->debug('SMTP response after command', ['command' => $command, 'response' => $response]);
             if (!$this->isSuccessResponse($response)) {
                 throw new TransportException("SMTP command failed: {$command} -> {$response}");
             }
+            return $response;
         }
+
+        return '';
     }
 
     /**
@@ -336,11 +375,16 @@ class SmtpTransport implements TransportInterface
         $len = strlen($fullData);
         $pos = 0;
         $chunkSize = 8192; // 8 KB chunks
+        $start = microtime(true);
         while ($pos < $len) {
             $toWrite = min($chunkSize, $len - $pos);
-            $written = fwrite($this->socket, substr($fullData, $pos, $toWrite));
+            $chunk = substr($fullData, $pos, $toWrite);
+            $written = @fwrite($this->socket, $chunk);
+            $now = microtime(true);
+            $this->logger->debug('SMTP chunk written', ['offset' => $pos, 'toWrite' => $toWrite, 'written' => $written, 'ms_since_start' => round(($now - $start) * 1000, 2)]);
             if ($written === false || $written === 0) {
                 $meta = stream_get_meta_data($this->socket);
+                $this->logger->error('SMTP failed to write chunk', ['meta' => $meta]);
                 throw new TransportException('Failed to write SMTP data to socket: ' . ($meta['timed_out'] ? 'timeout' : 'connection error'));
             }
             $pos += $written;
@@ -360,8 +404,22 @@ class SmtpTransport implements TransportInterface
             throw new TransportException('SMTP connection not established');
         }
 
+        // Enter readResponse (diagnostic tag will be added by caller via debug)
+        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+        $caller = $bt[1] ?? null;
+        $callerName = $caller['function'] ?? 'unknown';
+        $trace = [];
+        foreach ($bt as $b) {
+            $trace[] = (isset($b['function']) ? $b['function'] : '') . (isset($b['line']) ? ':' . $b['line'] : '');
+        }
+        $this->logger->debug('SMTP enter readResponse', ['caller' => $callerName, 'trace' => $trace]);
+
         $response = '';
+        $start = microtime(true);
         while (($line = fgets($this->socket, 515)) !== false) {
+            $now = microtime(true);
+            $elapsedMs = round(($now - $start) * 1000, 2);
+            $this->logger->debug('SMTP raw line received', ['caller' => $callerName, 'line' => rtrim($line, "\r\n"), 'ms_since_start' => $elapsedMs]);
             $response .= $line;
             // Line format: 3-digit-code + (' ' or '-') + text
             if (isset($line[3]) && $line[3] === ' ') {
@@ -370,10 +428,12 @@ class SmtpTransport implements TransportInterface
         }
 
         if ($response === '') {
+            $meta = stream_get_meta_data($this->socket);
+            $this->logger->error('SMTP no response', ['caller' => $callerName, 'meta' => $meta, 'trace' => $trace]);
             throw new TransportException('No response from SMTP server');
         }
 
-        $this->logger->debug('SMTP response received', ['response' => trim($response)]);
+        $this->logger->debug('SMTP exit readResponse', ['caller' => $callerName, 'response' => trim($response)]);
         return $response;
     }
 

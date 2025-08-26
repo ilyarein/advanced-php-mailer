@@ -1,8 +1,10 @@
 # Advanced Mailer
 
-![CI](https://github.com/ilyarein/advanced-php-mailer/actions/workflows/ci.yml/badge.svg)
-
-[![Codecov](https://codecov.io/gh/ilyarein/advanced-php-mailer/branch/main/graph/badge.svg?token=)](https://codecov.io/gh/ilyarein/advanced-php-mailer)
+<p>
+  <img alt="CI" src="https://github.com/ilyarein/advanced-php-mailer/actions/workflows/ci.yml/badge.svg" />
+  <img alt="Codecov" src="https://codecov.io/gh/ilyarein/advanced-php-mailer/branch/main/graph/badge.svg?token=" />
+  <img alt="Release" src="https://img.shields.io/github/v/release/ilyarein/advanced-php-mailer?label=Release&color=informational" />
+</p>
 
 Advanced Mailer is a modular PHP mailer library designed for flexibility and production usage. It provides multiple transports, a queueing system, a simple templating engine, email validation, PSR-3 compatible logging, DKIM and S/MIME signing helpers, and practical asynchronous sending.
 
