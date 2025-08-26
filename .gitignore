@@ -15,3 +15,7 @@ GIT_COMMANDS.md
 SHARED_HOSTING_SETUP.md
 *.swp
 *.swo
+
+# Release artifacts (created by build_release.ps1)
+release_tmp_*/
+advanced-php-mailer-*.zip

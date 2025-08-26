@@ -1,7 +1,7 @@
 {
     "name": "ilyarein/advanced-php-mailer",
     "description": "Advanced PHP Mail Library - Improved alternative to PHPMailer",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "type": "library",
     "license": "MIT",
     "authors": [
